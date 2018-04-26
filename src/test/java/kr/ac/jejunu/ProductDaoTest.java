@@ -4,7 +4,10 @@ import org.junit.Test;
 
 import java.sql.SQLException;
 
+
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class ProductDaoTest {
     public void setup() {
@@ -21,5 +24,19 @@ public class ProductDaoTest {
         assertEquals(id, product.getId());
         assertEquals(title, product.getTitle());
         assertEquals(price, product.getPrice());
+    }
+
+    @Test
+    public void add() throws SQLException, ClassNotFoundException {
+        Product product = new Product();
+        product.setTitle("한라봉");
+        product.setPrice(20000);
+
+        Long id = ProductDao.insert(product);
+
+        Product insertedProduct = ProductDao.get(id);
+        assertThat(insertedProduct.getId(), is(id));
+        assertThat(insertedProduct.getTitle(), is(product.getTitle()));
+        assertThat(insertedProduct.getPrice(), is(product.getPrice()));
     }
 }

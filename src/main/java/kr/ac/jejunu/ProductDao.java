@@ -3,9 +3,9 @@ package kr.ac.jejunu;
 import java.sql.*;
 
 public class ProductDao {
-    public Product get(Long id) throws ClassNotFoundException, SQLException {
+    public static Product get(Long id) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/jeju", "jeju", "jejupw");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/portal", "root", "1111");
 
         PreparedStatement preparedStatement = connection.prepareStatement("select * from product where id = ?");
         preparedStatement.setLong(1, id);
@@ -24,5 +24,26 @@ public class ProductDao {
         connection.close();
 
         return product;
+    }
+
+    public static Long insert(Product product) throws SQLException, ClassNotFoundException {
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/portal", "root", "1111");
+        PreparedStatement preparedStatement = connection.prepareStatement("insert into product(title, price) values (?, ?)");
+        preparedStatement.setString(1, product.getTitle());
+        preparedStatement.setInt(2, product.getPrice());
+
+        preparedStatement.executeUpdate();
+
+        preparedStatement = connection.prepareStatement("select last_insert_id()");
+        ResultSet resultSet = preparedStatement.executeQuery();
+        resultSet.next();
+
+        Long id = resultSet.getLong(1);
+        resultSet.close();
+        preparedStatement.close();
+        connection.close();
+
+        return id;
     }
 }
