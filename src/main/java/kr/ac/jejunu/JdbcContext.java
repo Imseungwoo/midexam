@@ -1,10 +1,7 @@
 package kr.ac.jejunu;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class JdbcContext {
     final DataSource dataSource;
@@ -17,17 +14,18 @@ public class JdbcContext {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
-        Product Product = null;
+        Product product = null;
         try {
             connection = dataSource.getConnection();
             preparedStatement = statementStrategy.makeStatement(connection);
-            resultSet = preparedStatement.executeQuery();
 
+
+            resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                Product = new Product();
-                Product.setId(resultSet.getLong("id"));
-                Product.setTitle(resultSet.getString("title"));
-                Product.setPrice(resultSet.getInt("price"));
+                product = new Product();
+                product.setId(resultSet.getLong("id"));
+                product.setTitle(resultSet.getString("title"));
+                product.setPrice(resultSet.getInt("price"));
             }
         } finally {
             if (resultSet != null)
@@ -48,8 +46,9 @@ public class JdbcContext {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+
         }
-        return Product;
+        return product;
     }
 
     Long jdbcContextForInsert(StatementStrategy statementStrategy) throws SQLException {
@@ -62,10 +61,8 @@ public class JdbcContext {
             preparedStatement = statementStrategy.makeStatement(connection);
 
             preparedStatement.executeUpdate();
-
             resultSet = preparedStatement.getGeneratedKeys();
             resultSet.next();
-
             id = resultSet.getLong(1);
         } finally {
             if (resultSet != null)
@@ -96,16 +93,15 @@ public class JdbcContext {
         try {
             connection = dataSource.getConnection();
             preparedStatement = statementStrategy.makeStatement(connection);
-
             preparedStatement.executeUpdate();
 
         } finally {
             if (preparedStatement != null)
-            try {
-                preparedStatement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             if (connection != null)
                 try {
                     connection.close();
@@ -113,5 +109,38 @@ public class JdbcContext {
                     e.printStackTrace();
                 }
         }
+    }
+
+    void update(String sql, Object[] params) throws SQLException {
+        StatementStrategy statementStrategy = connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++){
+                preparedStatement.setObject(i + 1, params[i]);
+            }
+            return preparedStatement;
+        };
+        jdbcContextForUpdate(statementStrategy);
+    }
+
+    Long insert(String sql, Object[] params) throws SQLException {
+        StatementStrategy statementStrategy = connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            for (int i = 0; i < params.length; i++){
+                preparedStatement.setObject(i + 1, params[i]);
+            }
+            return preparedStatement;
+        };
+        return jdbcContextForInsert(statementStrategy);
+    }
+
+    Product queryForObject(String sql, Object[] params) throws SQLException {
+        StatementStrategy statementStrategy = connection -> {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++){
+                preparedStatement.setObject(i + 1, params[i]);
+            }
+            return preparedStatement;
+        };
+        return jdbcContextForGet(statementStrategy);
     }
 }
