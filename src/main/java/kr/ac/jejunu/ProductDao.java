@@ -1,16 +1,17 @@
 package kr.ac.jejunu;
 
+import javax.sql.DataSource;
 import java.sql.*;
 
 public class ProductDao {
-    private final ConnectionMaker connectionMaker;
+    private final DataSource dataSource;
 
-    public ProductDao(ConnectionMaker connectionMaker) {
-        this.connectionMaker = connectionMaker;
+    public ProductDao(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public Product get(Long id) throws ClassNotFoundException, SQLException {
-        Connection connection = connectionMaker.getConnection();
+        Connection connection = dataSource.getConnection();
 
         PreparedStatement preparedStatement = connection.prepareStatement("select * from product where id = ?");
         preparedStatement.setLong(1, id);
@@ -32,7 +33,7 @@ public class ProductDao {
     }
 
     public Long insert(Product product) throws SQLException, ClassNotFoundException {
-        Connection connection = connectionMaker.getConnection();
+        Connection connection = dataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("insert into product(title, price) values (?, ?)");
         preparedStatement.setString(1, product.getTitle());
         preparedStatement.setInt(2, product.getPrice());

@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,7 @@ public class ProductDaoTest {
     @Before
     public void setup() {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DaoFactory.class);
+//        ApplicationContext applicationContext = new GenericXmlApplicationContext("classpath:daoFactory.xml");
         productDao = applicationContext.getBean("productDao", ProductDao.class);
     }
 
