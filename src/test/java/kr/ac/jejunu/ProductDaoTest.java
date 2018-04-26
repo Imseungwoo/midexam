@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.*;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,29 +22,57 @@ public class ProductDaoTest {
     }
 
     @Test
-    public void get() throws SQLException, ClassNotFoundException {
-        Long id = 1L;
-        String title = "제주감귤";
-        Integer price = 15000;
+    public void update() throws SQLException, ClassNotFoundException {
+        Product product = new Product();
+        Long id = insertProductTest(product);
 
+        product.setId(id);
+        product.setTitle("한라봉");
+        product.setPrice(30000);
+        productDao.update(product);
+
+        Product updatedProduct = productDao.get(id);
+
+        assertThat(updatedProduct.getId(), is(product.getId()));
+        assertThat(updatedProduct.getTitle(), is(product.getTitle()));
+        assertThat(updatedProduct.getPrice(), is(product.getPrice()));
+
+    }
+
+    private Long insertProductTest(Product product) throws SQLException, ClassNotFoundException {
+        product.setTitle("한라봉");
+        product.setPrice(20000);
+        return productDao.insert(product);
+    }
+
+    @Test
+    public void delete() throws SQLException, ClassNotFoundException {
+        Product product = new Product();
+        Long id = insertProductTest(product);
+
+        productDao.delete(id);
+
+        Product deletedProduct = productDao.get(id);
+        assertThat(deletedProduct, nullValue());
+
+    }
+
+    @Test
+    public void get() throws SQLException, ClassNotFoundException {
+        long id = 1;
         Product product = productDao.get(id);
-        assertThat(id, is(product.getId()));
-        assertThat(title, is(product.getTitle()));
-        assertThat(price, is(product.getPrice()));
+        assertThat(product.getId(), is(id));
+        assertThat(product.getTitle(), is("제주감귤"));
+        assertThat(product.getPrice(), is(15000));
     }
 
     @Test
     public void add() throws SQLException, ClassNotFoundException {
         Product product = new Product();
 
-        product.setTitle("한라봉");
-        product.setPrice(20000);
-
-        Long id = productDao.insert(product);
+        Long id = insertProductTest(product);
 
         Product insertedProduct = productDao.get(id);
         assertThat(insertedProduct.getId(), is(id));
-        assertThat(insertedProduct.getTitle(), is(product.getTitle()));
-        assertThat(insertedProduct.getPrice(), is(product.getPrice()));
     }
 }
